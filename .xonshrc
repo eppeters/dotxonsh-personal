@@ -12,3 +12,5 @@ source-zsh --sourcer source "echo loading xonsh foreign shell"
 #source-bash "echo loading xonsh foreign shell"
 xontrib load bashisms coreutils docker_tabcomplete prompt_ret_code vox vox_tabcomplete z click_tabcomplete fzf-widgets
 ## XONSH WIZARD END
+
+aliases['gst'] = lambda: $[git status]
