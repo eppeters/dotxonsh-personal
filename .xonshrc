@@ -1,0 +1,14 @@
+# XONSH WIZARD START
+$AUTO_SUGGEST_IN_COMPLETIONS = '1'
+$BASH_COMPLETIONS = 'ls'
+$CASE_SENSITIVE_COMPLETIONS = ''
+$IGNOREEOF = '1'
+$XONSH_AUTOPAIR = '1'
+$XONSH_CACHE_EVERYTHING = '1'
+$XONSH_HISTORY_SIZE = '15778800.0 s'
+$XONSH_SHOW_TRACEBACK = ''
+$XONSH_TRACEBACK_LOGFILE = '/home/eddie/.config/xonsh/traceback.log '
+source-zsh --sourcer source "echo loading xonsh foreign shell"
+#source-bash "echo loading xonsh foreign shell"
+xontrib load bashisms coreutils docker_tabcomplete prompt_ret_code vox vox_tabcomplete z click_tabcomplete fzf-widgets
+## XONSH WIZARD END
