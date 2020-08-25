@@ -1,0 +1,116 @@
+# vim: filetype=xonsh
+
+normal_vox = aliases['vox']
+
+def pyenv_vox(argument_list, **kwargs):
+    """Use pyenv-detected python to create environments if no other interpreter is specified."""
+    print(f'Using alias for vox in .xonshrc')
+    if len(argument_list) and argument_list[0] in ('new', 'create',) \
+            and '--interpreter' not in argument_list \
+            and '-p' not in argument_list:
+            python = !(pyenv which python)
+            if python:
+                python = python.output.strip()
+            else:
+                print(f'Unable to detect python')
+                return False
+            print(f'Using pyenv-detected python to create new environment: {python}')
+            argument_list = ['new', '--interpreter', python] + argument_list[1:]
+    return normal_vox(argument_list, **kwargs)
+
+aliases['vox'] = pyenv_vox
+
+aliases['source-bash'] = aliases['source-bash'] + ['--interactive=false']
+
+
+
+def _vd(argument_list, **kwargs):
+    assert 1 <= len(argument_list) <= 2, 'Pass either 1 or 2 arguments'
+    if len(argument_list) == 1:
+        venv = pathlib.Path(${...}.get('VIRTUAL_ENV'))
+        assert venv, 'No virtualenv active, dingus'
+        pkg = argument_list[0]
+    elif len(argument_list) == 2:
+        venv, pkg = argument_list
+        venv = pathlib.Path(${...}['VIRTUALENV_HOME']) / venv
+    assert venv.exists(), 'Virtualenv does not exist'
+    paths = find(venv,
+                 lambda p: p.is_dir() and (
+                           p.match(f'site-packages/{pkg}') or
+                           p.match(f'src/{pkg}')))
+    print(f'paths = {paths}')
+    if not paths:
+        print('No package found')
+        return
+    print(f'path = {paths[0]}')
+    cd @(paths[0])
+
+
+aliases['vd'] = _vd
+
+
+def _manaws(argument_list, **kwargs):
+    """Execute the manage-aws command from ex-infra-config."""
+    vox activate ex-infra-config
+    hostname = !(/home/eddie/.virtualenvs/ex-infra-config/bin/python /home/eddie/dev/ex-infra-config/provisioning/manage-aws.py @(argument_list and ' '.join(argument_list)))
+    vox deactivate
+    if hostname.returncode != 0:
+        return hostname.returncode
+
+
+aliases['manaws'] = _manaws
+
+
+def _awssh(argument_list, **kwargs):
+    """SSH into a production AWS box by short name."""
+    if len(argument_list) != 1:
+        print('pass a fucking name')
+        return 1
+    vox activate ex-infra-config
+    hostname = !(/home/eddie/.virtualenvs/ex-infra-config/bin/python /home/eddie/dev/ex-infra-config/provisioning/manage-aws.py production hostname @(argument_list[0]))
+    vox deactivate
+    if hostname.returncode != 0:
+        return hostname.returncode
+    ssh @(hostname.output)
+
+
+aliases['awssh'] = _awssh
+
+source ~/.xonshenv
+
+import json
+
+def awstail(log_type='access', role='mp'):
+    if role not in ('web', 'mp'):
+        raise ValueError('Invalid role type. Valid types: [mp, web]')
+    for ec2 in json.loads($(aws ec2 describe-instances --filters Name=tag:EX_Environment,Values=production Name=instance-state-name,Values=running --query 'Reservations[*].Instances[*].{"Tags": Tags, "PublicDNSName": PublicDnsName}')):
+        _role = [t['Value'] for t in ec2[0]['Tags'] if t['Key'] == 'EX_Role'][0]
+        name = [t['Value'] for t in ec2[0]['Tags'] if t['Key'] == 'Name']
+        if _role == 'mp' and role == 'mp':
+            if log_type in ('access', 'error'):
+                log_path = f'/var/log/nginx/api.{log_type}.log'
+            elif log_type == 'snakex':
+                log_path = '/var/log/snakex.log'
+            else:
+                raise ValueError(
+                    'Invalid log type for this role. Valid '
+                    'types: [access, error, snakex]')
+        elif _role == 'web' and role == 'web':
+            if log_type in ('access', 'error'):
+                log_path = f'/var/log/loggly/{log_type}_log'
+            else:
+                raise ValueError(
+                    'Invalid log type for this role. Valid '
+                    'types: [access, error]')
+        else:
+            continue
+        ssh -nt epeters@@(ec2[0]['PublicDNSName']) sudo tail -f @(log_path) | sed -u @(f"s/^/{name[0]}/") all>>@(f'/home/eddie/dev/ex-infra-config/ec2_{role}_{log_type}_logs.log') &
+
+snakex_python = str(pathlib.Path($VIRTUALENV_HOME) / 'snakex/bin/python')
+_runpy = str(pathlib.Path('~/dev/snakex/localdevelopment/run.py').expanduser())
+aliases['runpy'] = [snakex_python, _runpy]
+aliases['dc'] = ['runpy', 'docker-compose']
+aliases['dcl'] = ['dc', 'logs']
+aliases['dcls'] = ['dcl', '--follow', 'simplesamlphp']
+aliases['dcsl'] = ['dcls']
+aliases['dclh'] = ['dcl', 'http-proxy']
