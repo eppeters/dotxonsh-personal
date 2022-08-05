@@ -1,0 +1,2 @@
+$PATH.append('/home/parallels/.cargo/bin')
+$AWS_PROFILE='vr'

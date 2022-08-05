@@ -1,0 +1,10 @@
+format = """$directory $git_branch$git_commit$git_status$git_state
+$character"""
+
+[character]
+success_symbol = " 🦖[❯](bold green)"
+error_symbol   = " 💥[❯](bold red)"
+
+[directory]
+format = '[\[](purple)[$path]($style)[$read_only]($read_only_style)[\]](purple)'
+read_only = " "

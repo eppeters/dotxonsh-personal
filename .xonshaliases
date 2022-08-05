@@ -1,26 +1,26 @@
 # vim: filetype=xonsh
 
-normal_vox = aliases['vox']
+#normal_vox = aliases['vox']
+#
+#def pyenv_vox(argument_list, **kwargs):
+#    """Use pyenv-detected python to create environments if no other interpreter is specified."""
+#    print(f'Using alias for vox in .xonshrc')
+#    if len(argument_list) and argument_list[0] in ('new', 'create',) \
+#            and '--interpreter' not in argument_list \
+#            and '-p' not in argument_list:
+#            python = !(pyenv which python)
+#            if python:
+#                python = python.output.strip()
+#            else:
+#                print(f'Unable to detect python')
+#                return False
+#            print(f'Using pyenv-detected python to create new environment: {python}')
+#            argument_list = ['new', '--interpreter', python] + argument_list[1:]
+#    return normal_vox(argument_list, **kwargs)
+#
+#aliases['vox'] = pyenv_vox
 
-def pyenv_vox(argument_list, **kwargs):
-    """Use pyenv-detected python to create environments if no other interpreter is specified."""
-    print(f'Using alias for vox in .xonshrc')
-    if len(argument_list) and argument_list[0] in ('new', 'create',) \
-            and '--interpreter' not in argument_list \
-            and '-p' not in argument_list:
-            python = !(pyenv which python)
-            if python:
-                python = python.output.strip()
-            else:
-                print(f'Unable to detect python')
-                return False
-            print(f'Using pyenv-detected python to create new environment: {python}')
-            argument_list = ['new', '--interpreter', python] + argument_list[1:]
-    return normal_vox(argument_list, **kwargs)
-
-aliases['vox'] = pyenv_vox
-
-aliases['source-bash'] = aliases['source-bash'] + ['--interactive=false']
+#aliases['source-bash'] = aliases['source-bash'] + ['--interactive=false']
 
 
 
